@@ -3,7 +3,6 @@ import {
   Get,
   HttpCode,
   Post,
-  Req,
   Header,
   Redirect,
   Query,
@@ -12,21 +11,26 @@ import {
   Put,
   Delete,
 } from '@nestjs/common';
-import { CreateCatDto } from './create-cat.dto';
+import { CreateCatDto } from './dto/create-cat.dto';
+import { CatsService } from './cats.service';
+import { Cat } from './interfaces/cat.interface';
 
 @Controller('cats') // decorator to define a controller, group set of routes
 export class CatsController {
+  constructor(private catsService: CatsService) {} // inject to use in this location
+
   @Post()
   @HttpCode(204)
   @Header('Cache-Control', 'none')
-  create(@Body() createCatDto: CreateCatDto): string {
-    return 'This action adds a new cat';
+  create(@Body() createCatDto: CreateCatDto) {
+    this.catsService.create(createCatDto);
   }
 
   @Get() // HTTP request method decorator, create handler for endpoint
   // access client request object via express
-  findAll(@Query() query: any): string {
-    return `This action returns all cats (limit: ${query.limit} items)`;
+  async findAll(@Query() query: any): Promise<Cat[]> {
+    console.log('limit', query.limit);
+    return this.catsService.findAll();
   }
 
   @Get('ab*cd') // This route has a wildcard
@@ -44,8 +48,8 @@ export class CatsController {
   }
 
   @Get(':id') // Route paramters
-  async findOne(@Param('id') id: string): Promise<any[]> {
-    return [];
+  findOne(@Param('id') id: string): string {
+    return `Thisi action finds a #${id} cat`;
   }
 
   @Put(':id')

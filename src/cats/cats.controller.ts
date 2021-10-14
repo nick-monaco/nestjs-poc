@@ -10,18 +10,20 @@ import {
   Body,
   Put,
   Delete,
+  UseFilters,
 } from '@nestjs/common';
 import { CreateCatDto } from './dto/create-cat.dto';
 import { CatsService } from './cats.service';
 import { Cat } from './interfaces/cat.interface';
+import { ForbiddenException } from 'src/forbidden.exception';
+import { HttpExceptionFilter } from 'src/http-exception.filter';
 
 @Controller('cats') // decorator to define a controller, group set of routes
+@UseFilters(new HttpExceptionFilter())
 export class CatsController {
   constructor(private catsService: CatsService) {} // inject to use in this location
 
   @Post()
-  @HttpCode(204)
-  @Header('Cache-Control', 'none')
   create(@Body() createCatDto: CreateCatDto) {
     this.catsService.create(createCatDto);
   }
@@ -52,7 +54,14 @@ export class CatsController {
     return `Thisi action finds a #${id} cat`;
   }
 
+  @Get('error')
+  async throwThis() {
+    throw new ForbiddenException();
+  }
+
   @Put(':id')
+  @HttpCode(204)
+  @Header('Cache-Control', 'none')
   update(@Param('id') id: string, @Body() updateCatDto: any) {
     return `Thisi action updates a #${id} cat`;
   }

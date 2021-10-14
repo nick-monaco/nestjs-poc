@@ -11,23 +11,29 @@ import {
   Put,
   Delete,
   UseFilters,
+  UseGuards,
+  SetMetadata,
 } from '@nestjs/common';
 import { CreateCatDto } from './dto/create-cat.dto';
 import { CatsService } from './cats.service';
 import { Cat } from './interfaces/cat.interface';
-import { ForbiddenException } from 'src/forbidden.exception';
-import { AllExceptionsFilter } from 'src/http-exception.filter';
-import { ValidationPipe } from 'src/validation.pipe';
-import { ParseIntPipe } from 'src/parse-int.pipe';
+import { ForbiddenException } from 'src/exceptions/forbidden.exception';
+import { AllExceptionsFilter } from 'src/exceptions/http-exception.filter';
+import { ValidationPipe } from 'src/pipes/validation.pipe';
+import { ParseIntPipe } from 'src/pipes/parse-int.pipe';
+import { RolesGuard } from 'src/guards/roles.guard';
+import { Roles } from 'src/decorators/roles.decorator';
 
 @Controller('cats') // decorator to define a controller, group set of routes
 @UseFilters(new AllExceptionsFilter())
+@UseGuards(RolesGuard)
 export class CatsController {
   constructor(private catsService: CatsService) {} // inject to use in this location
 
   @Post()
+  @Roles('admin') // Use custom decorator to check for admin role
   // Validate on request body
-  create(@Body(new ValidationPipe()) createCatDto: CreateCatDto) {
+  async create(@Body(new ValidationPipe()) createCatDto: CreateCatDto) {
     this.catsService.create(createCatDto);
   }
 

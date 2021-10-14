@@ -16,15 +16,18 @@ import { CreateCatDto } from './dto/create-cat.dto';
 import { CatsService } from './cats.service';
 import { Cat } from './interfaces/cat.interface';
 import { ForbiddenException } from 'src/forbidden.exception';
-import { HttpExceptionFilter } from 'src/http-exception.filter';
+import { AllExceptionsFilter } from 'src/http-exception.filter';
+import { ValidationPipe } from 'src/validation.pipe';
+import { ParseIntPipe } from 'src/parse-int.pipe';
 
 @Controller('cats') // decorator to define a controller, group set of routes
-@UseFilters(new HttpExceptionFilter())
+@UseFilters(new AllExceptionsFilter())
 export class CatsController {
   constructor(private catsService: CatsService) {} // inject to use in this location
 
   @Post()
-  create(@Body() createCatDto: CreateCatDto) {
+  // Validate on request body
+  create(@Body(new ValidationPipe()) createCatDto: CreateCatDto) {
     this.catsService.create(createCatDto);
   }
 
@@ -50,8 +53,11 @@ export class CatsController {
   }
 
   @Get(':id') // Route paramters
-  findOne(@Param('id') id: string): string {
-    return `Thisi action finds a #${id} cat`;
+  findOne(
+    @Param('id', new ParseIntPipe())
+    id: number,
+  ) {
+    return this.catsService.findOne(id);
   }
 
   @Get('error')

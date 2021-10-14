@@ -84,4 +84,9 @@ export class CatsController {
   remove(@Param('id') id: string) {
     return `This action removes a #${id} cat`;
   }
+
+  @Get()
+  async findOne(@User('firstName') firstName: string) {
+    console.log(`Hello ${firstName}`);
+  }
 }
